@@ -24,6 +24,8 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "user")
     private Image image;
 
+    private boolean status = false;
+
     public Long getId() {
         return id;
     }
@@ -54,6 +56,14 @@ public class User {
 
     public void setImage(Image image) {
         this.image = image;
+    }
+
+    public boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
     }
 
     public static class Builder {

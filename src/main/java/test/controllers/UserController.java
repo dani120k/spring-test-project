@@ -8,7 +8,6 @@ import test.model.User;
 import test.service.Impl.ImageService;
 import test.service.Impl.UserService;
 import test.util.ErrorWrapper;
-
 import java.util.Optional;
 
 
@@ -24,18 +23,21 @@ public class UserController {
         this.imageService = imageService;
     }
 
-    @GetMapping("/get")
+    @GetMapping("/getAll")
     public int getAll(){
         return userService.getAll().size();
     }
 
     @GetMapping("/add")
-    public Long addNewUser(@RequestParam String Uri, @RequestParam String name, @RequestParam String email){
+    public String addNewUser(@RequestParam String Uri, @RequestParam String name, @RequestParam String email){
         Optional<Image> image = imageService.findByUri(Uri);
-        System.out.println(image.isPresent()==true? "hi":"fuck");
-        User user = new User.Builder().setEmail(email).setName(name).setImage(image).build();
-        System.out.println(user.getImage().getUri());
-        return userService.save(user).getId();
+        if (image.isPresent()) {
+            User user = new User.Builder().setEmail(email).setName(name).setImage(image).build();
+            System.out.println(user.getImage().getUri());
+            return userService.save(user).getId().toString();
+        } else {
+            return new ErrorWrapper.Builder().setError_code(1L).setMessage("Image doesnt exist").toString();
+        }
 
 
     }
@@ -48,5 +50,33 @@ public class UserController {
         } else {
             return new ObjectMapper().writeValueAsString(new ErrorWrapper.Builder().setError_code(1L).setMessage("user doesnt exist").build());
         }
+    }
+
+    @GetMapping("/setStatus")
+    public String setStatus(@RequestParam("id") Long id, @RequestParam("status") String status){
+        boolean state;
+        switch (status){
+            case "Offline":
+                state = false;
+                break;
+            case "Online":
+                state = true;
+                break;
+            default:
+                return new ErrorWrapper.Builder().setError_code(1L).setMessage("status incorrect").toString();
+        }
+
+        Optional<User> user = userService.findById(id);
+        try{
+            Thread.sleep(5000);
+        }catch (InterruptedException ex){
+            ex.printStackTrace();
+        }
+        if (user.isPresent()){
+            user.get().setStatus(state);
+            userService.save(user.get());
+            return user.get().getId() + " " + !user.get().getStatus() + " " + user.get().getStatus();
+        } else
+            return new ErrorWrapper.Builder().setError_code(1L).setMessage("This user doesnt exist").toString();
     }
 }

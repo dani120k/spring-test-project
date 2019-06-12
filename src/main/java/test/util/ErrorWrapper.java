@@ -1,5 +1,7 @@
 package test.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ErrorWrapper {
     private Long error_code;
     private String message;
@@ -47,6 +49,15 @@ public class ErrorWrapper {
 
         public ErrorWrapper build(){
             return new ErrorWrapper(this);
+        }
+    }
+
+    @Override
+    public String toString(){
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+        } finally {
+            return "";
         }
     }
 
